@@ -9,8 +9,11 @@ def getCustomFontCharSizes(options: CliOptions) -> dict[str, tuple[int, int]]:
 	for op in options.operations:
 		if op.type != OperationType.FROM_FONT:
 			continue
-		charBBox = options.fonts[op.charFontId].getbbox(op.drawChar)
-		charSizes[op.drawChar] = (charBBox[2] - charBBox[0], charBBox[3] - charBBox[1])
+		charBBox = options.fonts[op.charFontId][0].getbbox(op.drawChar)
+		charWidth = charBBox[2] - charBBox[0]
+		charHeight = charBBox[3] - charBBox[1]
+		charHeight = max(charHeight, options.fonts[op.charFontId][1])
+		charSizes[op.drawChar] = (charWidth, charHeight)
 	return charSizes
 
 def estimateAtlasSize(options: CliOptions, charSizes: dict[str, tuple[int, int]]) -> int:
@@ -34,8 +37,11 @@ def estimateAtlasSize(options: CliOptions, charSizes: dict[str, tuple[int, int]]
 	
 	return size
 
-def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], atlasSize: int) -> Image.Image:
-	
+def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], atlasSize: int) -> tuple[Image.Image, dict]:
+	atlasMap = {
+		"size": atlasSize,
+		"symbols": {},
+	}
 	atlas = Image.new("RGBA", (atlasSize, atlasSize), color=(0, 0, 0, 0))
 	draw = ImageDraw.Draw(atlas)
 
@@ -61,16 +67,23 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], at
 				return generateAtlas(options, charSizes, atlasSize * 2)
 		
 		if op.type == OperationType.FROM_FONT:
-			draw.text((curX, curY), op.drawChar, font=options.fonts[op.charFontId])
+			draw.text((curX, curY), op.drawChar, font=options.fonts[op.charFontId][0])
 		elif op.type == OperationType.FROM_TEXTURE:
 			atlas.paste(options.srcTex.crop((op.srcX, op.srcY, op.srcX + op.width, op.srcY + op.height)), (curX, curY))
 		
+		atlasMap["symbols"][op.id] = {
+			"x": curX,
+			"y": curY,
+			"width": charWidth,
+			"height": charHeight,
+		}
 		curX += charWidth
 	
-	return atlas
+	return atlas, atlasMap
 
-def generateFontAtlas(options: CliOptions):
+def generateFontAtlas(options: CliOptions) -> dict:
 	charSizes = getCustomFontCharSizes(options)
 	atlasSize = estimateAtlasSize(options, charSizes)
-	atlas = generateAtlas(options, charSizes, atlasSize)
+	atlas, atlasMap = generateAtlas(options, charSizes, atlasSize)
 	atlas.save(options.dstTexPath)
+	return atlasMap

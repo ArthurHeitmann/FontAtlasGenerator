@@ -8,6 +8,7 @@ class OperationType:
 
 class ImgOperation:
 	type: int
+	id: int
 	drawChar: str|None
 	charFontId: int|None
 	srcX: int|None
@@ -17,6 +18,7 @@ class ImgOperation:
 
 	def __init__(self, d: dict):
 		self.type = d.get("type")
+		self.id = d.get("id")
 		self.drawChar = d.get("drawChar", None)
 		self.charFontId = d.get("charFontId", None)
 		self.srcX = d.get("srcX", None)
@@ -27,7 +29,7 @@ class ImgOperation:
 class CliOptions:
 	srcTexPath: str|None
 	srcTex: Image.Image|None
-	fonts: dict[int, FreeTypeFont] = {}
+	fonts: dict[int, tuple[FreeTypeFont, int]] = {}
 	dstTexPath: str
 	operations: list[ImgOperation]
 
@@ -42,4 +44,4 @@ class CliOptions:
 		for fontId, fontOptions in argsJson.get("fonts", {}).items():
 			fontPath = fontOptions.get("path")
 			fontSize = fontOptions.get("size")
-			self.fonts[fontId] = ImageFont.truetype(fontPath, fontSize)
+			self.fonts[fontId] = (ImageFont.truetype(fontPath, fontSize), fontSize)
