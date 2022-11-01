@@ -8,8 +8,8 @@ class OperationType:
 
 class ImgOperation:
 	type: int
-	# for font operations
 	id: int
+	# for font operations
 	drawChar: str|None
 	charFontId: int|None
 	# for texture operations
@@ -43,7 +43,7 @@ class CliOptions:
 		self.operations = [ImgOperation(d) for d in argsJson.get("operations", [])]
 
 		self.srcTextures = {}
-		for srcTexId, srcTexPath in self.srcTexPaths:
+		for srcTexId, srcTexPath in enumerate(self.srcTexPaths):
 			self.srcTextures[srcTexId] = Image.open(srcTexPath)
 
 		self.fonts = {}

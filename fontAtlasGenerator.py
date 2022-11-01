@@ -17,13 +17,18 @@ def getCustomFontCharSizes(options: CliOptions) -> dict[str, tuple[int, int]]:
 	return charSizes
 
 def estimateAtlasSize(options: CliOptions, charSizes: dict[str, tuple[int, int]]) -> int:
-	allCharsWidth = sum(w for w, h in charSizes.values())
-	allCharsHeight = max(h for w, h in charSizes.values())
-	allCharsCount = len(charSizes)
+	allCharsWidth = 0
+	allCharsHeight = 0
+	allCharsCount = 0
+	if charSizes:
+		allCharsWidth = sum(w for w, h in charSizes.values())
+		allCharsHeight = max(h for w, h in charSizes.values())
+		allCharsCount = len(charSizes)
 	texOps = [op for op in options.operations if op.type == OperationType.FROM_TEXTURE]
-	allCharsWidth += sum(op.width for op in texOps)
-	allCharsHeight += sum(op.height for op in texOps)
-	allCharsCount += len(texOps)
+	if texOps:
+		allCharsWidth += sum(op.width for op in texOps)
+		allCharsHeight += sum(op.height for op in texOps)
+		allCharsCount += len(texOps)
 
 	avrCharWidth = allCharsWidth / allCharsCount
 	avrCharHeight = allCharsHeight / allCharsCount
