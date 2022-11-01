@@ -69,7 +69,8 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], at
 		if op.type == OperationType.FROM_FONT:
 			draw.text((curX, curY), op.drawChar, font=options.fonts[op.charFontId][0])
 		elif op.type == OperationType.FROM_TEXTURE:
-			atlas.paste(options.srcTex.crop((op.srcX, op.srcY, op.srcX + op.width, op.srcY + op.height)), (curX, curY))
+			srcTex = options.srcTextures[op.srcTexId]
+			atlas.paste(srcTex.crop((op.srcX, op.srcY, op.srcX + op.width, op.srcY + op.height)), (curX, curY))
 		
 		atlasMap["symbols"][op.id] = {
 			"x": curX,

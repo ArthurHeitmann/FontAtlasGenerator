@@ -17,7 +17,9 @@ from fontAtlasGenerator import generateFontAtlas
 # 			"size": 32,
 # 		}
 # 	},
-# 	"srcTexPath": "D:\\delete\\mods\\na\\blender\\extracted\\data009.cpk_unpacked\\ui\\nier2blender_extracted\\ui_core_us.dtt\\messcore.wtp.png",
+# 	"srcTexPaths": [
+# 		["0", "D:\\delete\\mods\\na\\blender\\extracted\\data009.cpk_unpacked\\ui\\nier2blender_extracted\\ui_core_us.dtt\\messcore.wtp.png"]
+# 	],
 # 	"operations": [
 # 		{
 # 			"type": 1,
