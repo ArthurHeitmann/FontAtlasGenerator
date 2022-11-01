@@ -44,7 +44,8 @@ from fontAtlasGenerator import generateFontAtlas
 
 if __name__ == "__main__":
 	# print(sys.argv[1])
-	options = json.loads(sys.argv[1])
+	# options = json.loads(sys.argv[1])
+	options = json.loads(input())
 	# options = debugArgs
 	atlasMap = generateFontAtlas(CliOptions(options))
 	print(json.dumps(atlasMap))
