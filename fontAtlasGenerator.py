@@ -9,10 +9,10 @@ def getCustomFontCharSizes(options: CliOptions) -> dict[str, tuple[int, int]]:
 	for op in options.operations:
 		if op.type != OperationType.FROM_FONT:
 			continue
-		charBBox = options.fonts[op.charFontId][0].getbbox(op.drawChar)
+		charBBox = options.fonts[op.charFontId].font.getbbox(op.drawChar)
 		charWidth = charBBox[2] - charBBox[0]
 		charHeight = charBBox[3] - charBBox[1]
-		charHeight = max(charHeight, options.fonts[op.charFontId][1])
+		charHeight = max(charHeight, options.fonts[op.charFontId].fontHeight)
 		charSizes[op.drawChar] = (charWidth, charHeight)
 	return charSizes
 
@@ -72,7 +72,10 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], at
 				return generateAtlas(options, charSizes, atlasSize * 2)
 		
 		if op.type == OperationType.FROM_FONT:
-			draw.text((curX, curY), op.drawChar, font=options.fonts[op.charFontId][0])
+			font = options.fonts[op.charFontId]
+			xOff = font.letXOffset
+			yOff = font.letYOffset
+			draw.text((curX + xOff, curY + yOff), op.drawChar, font=font.font)
 		elif op.type == OperationType.FROM_TEXTURE:
 			srcTex = options.srcTextures[op.srcTexId]
 			atlas.paste(srcTex.crop((op.srcX, op.srcY, op.srcX + op.width, op.srcY + op.height)), (curX, curY))

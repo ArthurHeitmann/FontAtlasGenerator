@@ -30,10 +30,26 @@ class ImgOperation:
 		self.width = d.get("width", None)
 		self.height = d.get("height", None)
 
+class FontOptions:
+	fontPath: str
+	font: FreeTypeFont
+	fontHeight: int
+	fontScale: int
+	letXOffset: int
+	letYOffset: int
+
+	def __init__(self, d: dict):
+		self.fontPath = d.get("path")
+		self.fontHeight = d.get("height")
+		self.fontScale = d.get("scale", 1)
+		self.letXOffset = d.get("letXOffset", 0)
+		self.letYOffset = d.get("letYOffset", 0)
+		self.font = ImageFont.truetype(self.fontPath, size=int(self.fontHeight * self.fontScale))
+
 class CliOptions:
 	srcTexPaths: list[tuple[int, str]]
 	srcTextures: dict[int, Image.Image|None]
-	fonts: dict[int, tuple[FreeTypeFont, int]]
+	fonts: dict[int, FontOptions]
 	dstTexPath: str
 	operations: list[ImgOperation]
 
@@ -48,6 +64,4 @@ class CliOptions:
 
 		self.fonts = {}
 		for fontId, fontOptions in argsJson.get("fonts", {}).items():
-			fontPath = fontOptions.get("path")
-			fontSize = fontOptions.get("size")
-			self.fonts[fontId] = (ImageFont.truetype(fontPath, fontSize), fontSize)
+			self.fonts[fontId] = FontOptions(fontOptions)

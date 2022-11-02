@@ -10,15 +10,17 @@ from fontAtlasGenerator import generateFontAtlas
 # 	"fonts": {
 # 		"0": {
 # 			"path": "C:\\Windows\\Fonts\\arial.ttf",
-# 			"size": 32,
+# 			"height": 32,
+# 			"scale": 1
 # 		},
 # 		"1": {
 # 			"path": "CascadiaMono.ttf",
-# 			"size": 32,
+# 			"height": 32,
+# 			"scale": 1
 # 		}
 # 	},
 # 	"srcTexPaths": [
-# 		["0", "D:\\delete\\mods\\na\\blender\\extracted\\data009.cpk_unpacked\\ui\\nier2blender_extracted\\ui_core_us.dtt\\messcore.wtp.png"]
+# 		"D:\\delete\\mods\\na\\blender\\extracted\\data009.cpk_unpacked\\ui\\nier2blender_extracted\\ui_core_us.dtt\\messcore.wtp.png"
 # 	],
 # 	"operations": [
 # 		{
