@@ -9,44 +9,101 @@ from fontAtlasGenerator import generateFontAtlas
 # 	"dstTexPath": "atlasTest.png",
 # 	"fonts": {
 # 		"0": {
-# 			"path": "C:\\Windows\\Fonts\\arial.ttf",
-# 			"height": 32,
+# 			"path": "C:\\Windows\\Fonts\\comic.ttf",
+# 			"height": 76,
 # 			"scale": 1
 # 		},
 # 		"1": {
-# 			"path": "CascadiaMono.ttf",
-# 			"height": 32,
+# 			"path": "C:\\Windows\\Fonts\\comic.ttf",
+# 			"height": 12,
+# 			"scale": 1.5
+# 		},
+# 		"2": {
+# 			"path": "C:\\Windows\\Fonts\\comic.ttf",
+# 			"height": 26,
 # 			"scale": 1
 # 		}
 # 	},
 # 	"srcTexPaths": [
-# 		"D:\\delete\\mods\\na\\blender\\extracted\\data009.cpk_unpacked\\ui\\nier2blender_extracted\\ui_core_us.dtt\\messcore.wtp.png"
 # 	],
 # 	"operations": [
 # 		{
 # 			"type": 1,
 # 			"id": 0,
-# 			"drawChar": "A",
-# 			"charFontId": "0"
+# 			"drawChar": "e",
+# 			"charFontId": "1"
 # 		},
 # 		{
 # 			"type": 1,
 # 			"id": 1,
-# 			"drawChar": "C",
+# 			"drawChar": "S",
 # 			"charFontId": "0"
 # 		},
 # 		{
 # 			"type": 1,
 # 			"id": 2,
+# 			"drawChar": "e",
+# 			"charFontId": "0"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 3,
+# 			"drawChar": "c",
+# 			"charFontId": "0"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 4,
+# 			"drawChar": "t",
+# 			"charFontId": "0"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 5,
+# 			"drawChar": "A",
+# 			"charFontId": "0"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 6,
+# 			"drawChar": "C",
+# 			"charFontId": "0"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 7,
 # 			"drawChar": "B",
 # 			"charFontId": "1"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 8,
+# 			"drawChar": "B",
+# 			"charFontId": "1"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 9,
+# 			"drawChar": "C",
+# 			"charFontId": "2"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 10,
+# 			"drawChar": "B",
+# 			"charFontId": "2"
+# 		},
+# 		{
+# 			"type": 1,
+# 			"id": 11,
+# 			"drawChar": "B",
+# 			"charFontId": "2"
 # 		},
 # 	]
 # }
 
 if __name__ == "__main__":
 	# print(sys.argv[1])
-	# options = json.loads(sys.argv[1])
 	options = json.loads(input())
 	# options = debugArgs
 	atlasMap = generateFontAtlas(CliOptions(options))

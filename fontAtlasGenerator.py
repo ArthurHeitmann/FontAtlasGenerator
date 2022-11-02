@@ -1,28 +1,40 @@
 from __future__ import annotations
+from dataclasses import dataclass
 from PIL import Image, ImageDraw
 from PIL.ImageFont import FreeTypeFont
 
 from cliOptions import CliOptions, OperationType
 
-def getCustomFontCharSizes(options: CliOptions) -> dict[str, tuple[int, int]]:
-	charSizes: dict[str, tuple[int, int]] = {}
+@dataclass
+class FontCharSize:
+	char: str
+	width: int
+	height: int
+	xOff: int
+	yOff: int
+
+def getCustomFontCharSizes(options: CliOptions) -> dict[str, FontCharSize]:
+	charSizes: dict[str, FontCharSize] = {}
 	for op in options.operations:
 		if op.type != OperationType.FROM_FONT:
 			continue
-		charBBox = options.fonts[op.charFontId].font.getbbox(op.drawChar)
+		fontOpt = options.fonts[op.charFontId]
+		charBBox = fontOpt.font.getbbox(op.drawChar)
 		charWidth = charBBox[2] - charBBox[0]
 		charHeight = charBBox[3] - charBBox[1]
-		charHeight = max(charHeight, options.fonts[op.charFontId].fontHeight)
-		charSizes[op.drawChar] = (charWidth, charHeight)
+		charHeight = max(charHeight, fontOpt.fontHeight)
+		xOff = fontOpt.letXOffset - charBBox[0]/2
+		yOff = fontOpt.letYOffset - charBBox[1]/2
+		charSizes[op.id] = FontCharSize(op.drawChar, charWidth, charHeight, xOff, yOff)
 	return charSizes
 
-def estimateAtlasSize(options: CliOptions, charSizes: dict[str, tuple[int, int]]) -> int:
+def estimateAtlasSize(options: CliOptions, charSizes: dict[str, FontCharSize]) -> int:
 	allCharsWidth = 0
 	allCharsHeight = 0
 	allCharsCount = 0
 	if charSizes:
-		allCharsWidth = sum(w for w, h in charSizes.values())
-		allCharsHeight = max(h for w, h in charSizes.values())
+		allCharsWidth = sum(s.width for s in charSizes.values())
+		allCharsHeight = max(s.height for s in charSizes.values())
 		allCharsCount = len(charSizes)
 	texOps = [op for op in options.operations if op.type == OperationType.FROM_TEXTURE]
 	if texOps:
@@ -42,7 +54,7 @@ def estimateAtlasSize(options: CliOptions, charSizes: dict[str, tuple[int, int]]
 	
 	return size
 
-def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], atlasSize: int) -> tuple[Image.Image, dict]:
+def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlasSize: int) -> tuple[Image.Image, dict]:
 	atlasMap = {
 		"size": atlasSize,
 		"symbols": {},
@@ -55,8 +67,8 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], at
 	curRowHeight = 0
 	for op in options.operations:
 		if op.type == OperationType.FROM_FONT:
-			charWidth = charSizes[op.drawChar][0]
-			charHeight = charSizes[op.drawChar][1]
+			charWidth = charSizes[op.id].width
+			charHeight = charSizes[op.id].height
 		elif op.type == OperationType.FROM_TEXTURE:
 			charWidth = op.width
 			charHeight = op.height
@@ -73,8 +85,8 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], at
 		
 		if op.type == OperationType.FROM_FONT:
 			font = options.fonts[op.charFontId]
-			xOff = font.letXOffset
-			yOff = font.letYOffset
+			xOff = charSizes[op.id].xOff
+			yOff = charSizes[op.id].yOff
 			draw.text((curX + xOff, curY + yOff), op.drawChar, font=font.font)
 		elif op.type == OperationType.FROM_TEXTURE:
 			srcTex = options.srcTextures[op.srcTexId]
@@ -92,6 +104,7 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, tuple[int, int]], at
 
 def generateFontAtlas(options: CliOptions) -> dict:
 	charSizes = getCustomFontCharSizes(options)
+	# options.operations.sort(key=lambda op: charSizes[op.id].height if op.type == OperationType.FROM_FONT else op.height)
 	atlasSize = estimateAtlasSize(options, charSizes)
 	atlas, atlasMap = generateAtlas(options, charSizes, atlasSize)
 	atlas.save(options.dstTexPath)
