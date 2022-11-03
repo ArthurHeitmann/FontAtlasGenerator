@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import sys
@@ -103,8 +104,9 @@ from fontAtlasGenerator import generateFontAtlas
 # }
 
 if __name__ == "__main__":
-	# print(sys.argv[1])
-	options = json.loads(input())
+	b64Json = input() # read json in base64 format
+	jsonIn = base64.b64decode(b64Json).decode("utf-8")
+	options = json.loads(jsonIn)
 	# options = debugArgs
 	atlasMap = generateFontAtlas(CliOptions(options))
 	print(json.dumps(atlasMap))

@@ -37,6 +37,7 @@ class FontOptions:
 	fontScale: int
 	letXOffset: int
 	letYOffset: int
+	bottomBaseline: int|None
 
 	def __init__(self, d: dict):
 		self.fontPath = d.get("path")
@@ -45,11 +46,12 @@ class FontOptions:
 		self.letXOffset = d.get("letXOffset", 0)
 		self.letYOffset = d.get("letYOffset", 0)
 		self.font = ImageFont.truetype(self.fontPath, size=int(self.fontHeight * self.fontScale))
+		self.bottomBaseline = None
 
 class CliOptions:
 	srcTexPaths: list[tuple[int, str]]
 	srcTextures: dict[int, Image.Image|None]
-	fonts: dict[int, FontOptions]
+	fonts: dict[str, FontOptions]
 	dstTexPath: str
 	operations: list[ImgOperation]
 

@@ -3,7 +3,48 @@ from dataclasses import dataclass
 from PIL import Image, ImageDraw
 from PIL.ImageFont import FreeTypeFont
 
+from cliOptions import FontOptions
+
 from cliOptions import CliOptions, OperationType
+def adjustFonts(options: CliOptions):
+	# for each font:
+	# 1. find largest bbox height extents
+	# 2. optionally adjust yOffset and scale
+	#   2.1. if max height is > fontHeight, scale font to fit
+	#   2.2. if top most edge is != 0, adjust yOffset
+	# 3. save bottom baseline
+
+	font: FontOptions
+	for fontId, font in options.fonts.items():
+		# 1.
+		testChars = {
+			c for c in
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ÄÖÜßÈÉÊËÀÂÄÇÌÍÎÏÒÓÔÖÙÚÛÜÑŸÆŒÆŒ"
+		}
+		testChars = {
+			op.drawChar
+			for op in options.operations
+			if op.type == OperationType.FROM_FONT and op.charFontId == fontId
+		}.union(testChars)
+		minTop = 999999
+		maxBottom = 0
+		for c in testChars:
+			bbox = font.font.getbbox(c)
+			minTop = min(minTop, bbox[1])
+			maxBottom = max(maxBottom, bbox[3])
+		
+		# 2.1.
+		maxHeight = maxBottom - minTop
+		if maxHeight > font.fontHeight:
+			tooBigByFactor = maxHeight / font.fontHeight
+			font.font = FreeTypeFont(font.fontPath, int(font.fontHeight / tooBigByFactor))
+		# 2.2.
+		if minTop != 0:
+			font.letYOffset -= minTop
+	
+		# 3.
+		fontMetrics = font.font.getmetrics()
+		font.bottomBaseline = fontMetrics[0] + fontMetrics[1]
 
 @dataclass
 class FontCharSize:
@@ -46,7 +87,7 @@ def estimateAtlasSize(options: CliOptions, charSizes: dict[str, FontCharSize]) -
 	avrCharHeight = allCharsHeight / allCharsCount
 
 	estimatedAtlasArea = avrCharWidth * avrCharHeight * allCharsCount
-	estimatedAtlasArea *= 1.5
+	estimatedAtlasArea *= 1.2
 
 	size = 256
 	while size**2 < estimatedAtlasArea:
@@ -57,6 +98,13 @@ def estimateAtlasSize(options: CliOptions, charSizes: dict[str, FontCharSize]) -
 def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlasSize: int) -> tuple[Image.Image, dict]:
 	atlasMap = {
 		"size": atlasSize,
+		"fontParams": {
+			fontId: {
+				"baseline": font.bottomBaseline,
+				"scale": font.font.size / font.fontHeight,
+			}
+			for fontId, font in options.fonts.items()
+		},
 		"symbols": {},
 	}
 	atlas = Image.new("RGBA", (atlasSize, atlasSize), color=(0, 0, 0, 0))
@@ -103,8 +151,9 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlas
 	return atlas, atlasMap
 
 def generateFontAtlas(options: CliOptions) -> dict:
+	options.operations.sort(key=lambda op: options.fonts[op.charFontId].fontHeight if op.type == OperationType.FROM_FONT else op.height)
+	adjustFonts(options)
 	charSizes = getCustomFontCharSizes(options)
-	# options.operations.sort(key=lambda op: charSizes[op.id].height if op.type == OperationType.FROM_FONT else op.height)
 	atlasSize = estimateAtlasSize(options, charSizes)
 	atlas, atlasMap = generateAtlas(options, charSizes, atlasSize)
 	atlas.save(options.dstTexPath)
