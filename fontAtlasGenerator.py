@@ -23,8 +23,8 @@ def getCustomFontCharSizes(options: CliOptions) -> dict[str, FontCharSize]:
 		charWidth = charBBox[2] - charBBox[0]
 		charHeight = charBBox[3] - charBBox[1]
 		charHeight = max(charHeight, fontOpt.fontHeight)
-		xOff = fontOpt.letXOffset - charBBox[0]/2
-		yOff = fontOpt.letYOffset - charBBox[1]/2
+		xOff = fontOpt.letXOffset
+		yOff = fontOpt.letYOffset
 		charSizes[op.id] = FontCharSize(op.drawChar, charWidth, charHeight, xOff, yOff)
 	return charSizes
 
