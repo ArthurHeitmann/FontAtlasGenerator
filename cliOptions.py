@@ -35,6 +35,8 @@ class FontOptions:
 	font: FreeTypeFont
 	fontHeight: int
 	fontScale: int
+	letXPadding: int
+	letYPadding: int
 	letXOffset: int
 	letYOffset: int
 	bottomBaseline: int|None
@@ -43,8 +45,10 @@ class FontOptions:
 		self.fontPath = d.get("path")
 		self.fontHeight = d.get("height")
 		self.fontScale = d.get("scale", 1)
-		self.letXOffset = d.get("letXOffset", 0)
-		self.letYOffset = d.get("letYOffset", 0)
+		self.letXPadding = d.get("letXPadding", 0)
+		self.letYPadding = d.get("letYPadding", 0)
+		self.letXOffset = d.get("letXOffset", 0) + self.letXPadding
+		self.letYOffset = d.get("letYOffset", 0) + self.letYPadding
 		self.font = ImageFont.truetype(self.fontPath, size=int(self.fontHeight * self.fontScale))
 		self.bottomBaseline = None
 
@@ -53,11 +57,13 @@ class CliOptions:
 	srcTextures: dict[int, Image.Image|None]
 	fonts: dict[str, FontOptions]
 	dstTexPath: str
+	letterSpacing: int
 	operations: list[ImgOperation]
 
 	def __init__(self, argsJson: dict):
 		self.srcTexPaths = argsJson.get("srcTexPaths", [])
 		self.dstTexPath = argsJson.get("dstTexPath", None)
+		self.letterSpacing = argsJson.get("letterSpacing", 0)
 		self.operations = [ImgOperation(d) for d in argsJson.get("operations", [])]
 
 		self.srcTextures = {}

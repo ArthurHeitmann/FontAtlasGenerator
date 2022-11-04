@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps, ImageFilter, ImageEnhance
 from PIL.ImageFont import FreeTypeFont
 
 from cliOptions import FontOptions
@@ -19,7 +19,7 @@ def adjustFonts(options: CliOptions):
 		# 1.
 		testChars = {
 			c for c in
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ÄÖÜßÈÉÊËÀÂÄÇÌÍÎÏÒÓÔÖÙÚÛÜÑŸÆŒÆŒ"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ÄÖÜßÈÉÊËÀÂÄÇÌÍÎÏÒÓÔÖÙÚÛÜÑŸÆŒÆŒ[]"
 		}
 		testChars = {
 			op.drawChar
@@ -34,7 +34,7 @@ def adjustFonts(options: CliOptions):
 			maxBottom = max(maxBottom, bbox[3])
 		
 		# 2.1.
-		maxHeight = maxBottom - minTop
+		maxHeight = maxBottom - minTop + font.letYPadding*2
 		if maxHeight > font.fontHeight:
 			tooBigByFactor = maxHeight / font.fontHeight
 			font.font = FreeTypeFont(font.fontPath, int(font.fontHeight / tooBigByFactor))
@@ -44,7 +44,12 @@ def adjustFonts(options: CliOptions):
 	
 		# 3.
 		fontMetrics = font.font.getmetrics()
+		additionalYOffset = 0
 		font.bottomBaseline = fontMetrics[0] + fontMetrics[1]
+		if font.bottomBaseline < font.fontHeight:
+			additionalYOffset = fontMetrics[1] // 2
+		font.letYOffset += additionalYOffset
+		font.bottomBaseline += additionalYOffset
 
 @dataclass
 class FontCharSize:
@@ -61,7 +66,7 @@ def getCustomFontCharSizes(options: CliOptions) -> dict[str, FontCharSize]:
 			continue
 		fontOpt = options.fonts[op.charFontId]
 		charBBox = fontOpt.font.getbbox(op.drawChar)
-		charWidth = charBBox[2] - charBBox[0]
+		charWidth = charBBox[2] - charBBox[0] + fontOpt.letXPadding*2
 		charHeight = charBBox[3] - charBBox[1]
 		charHeight = max(charHeight, fontOpt.fontHeight)
 		xOff = fontOpt.letXOffset
@@ -83,8 +88,8 @@ def estimateAtlasSize(options: CliOptions, charSizes: dict[str, FontCharSize]) -
 		allCharsHeight += sum(op.height for op in texOps)
 		allCharsCount += len(texOps)
 
-	avrCharWidth = allCharsWidth / allCharsCount
-	avrCharHeight = allCharsHeight / allCharsCount
+	avrCharWidth = allCharsWidth / allCharsCount + options.letterSpacing
+	avrCharHeight = allCharsHeight / allCharsCount + options.letterSpacing
 
 	estimatedAtlasArea = avrCharWidth * avrCharHeight * allCharsCount
 	estimatedAtlasArea *= 1.2
@@ -123,14 +128,14 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlas
 		else:
 			raise Exception("Unknown operation type")
 		curRowHeight = max(curRowHeight, charHeight)
-		if curX + charWidth > atlasSize:
-			curX = 0
-			curY += curRowHeight
+		if curX + charWidth + options.letterSpacing > atlasSize:
+			curX = options.letterSpacing
+			curY += curRowHeight + options.letterSpacing
 			curRowHeight = 0
 			if curY + charHeight > atlasSize:
 				# big oof
 				return generateAtlas(options, charSizes, atlasSize * 2)
-		
+
 		if op.type == OperationType.FROM_FONT:
 			font = options.fonts[op.charFontId]
 			xOff = charSizes[op.id].xOff
@@ -146,9 +151,18 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlas
 			"width": charWidth,
 			"height": charHeight,
 		}
-		curX += charWidth
+		curX += charWidth + options.letterSpacing
 	
-	return atlas, atlasMap
+	# fix half transparent pixels
+	mask = atlas.getchannel("A")
+	out = Image.new("RGBA", atlas.size, color=(0, 0, 0, 255))
+	out.paste(mask)
+	# out = out.filter(ImageFilter.BoxBlur(radius=0.25))
+	# out = ImageEnhance.Brightness(out).enhance(1.5)
+	out.putalpha(mask)
+	
+	
+	return out, atlasMap
 
 def generateFontAtlas(options: CliOptions) -> dict:
 	options.operations.sort(key=lambda op: options.fonts[op.charFontId].fontHeight if op.type == OperationType.FROM_FONT else op.height)
