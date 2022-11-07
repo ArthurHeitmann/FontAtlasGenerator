@@ -12,6 +12,7 @@ class ImgOperation:
 	# for font operations
 	drawChar: str|None
 	charFontId: int|None
+	fallback: ImgOperation|None
 	# for texture operations
 	srcTexId: int|None
 	srcX: int|None
@@ -29,6 +30,10 @@ class ImgOperation:
 		self.srcY = d.get("srcY", None)
 		self.width = d.get("width", None)
 		self.height = d.get("height", None)
+
+		fallback = d.get("fallback", None)
+		if fallback is not None:
+			self.fallback = ImgOperation(fallback)
 
 class FontOptions:
 	fontPath: str
@@ -58,12 +63,14 @@ class CliOptions:
 	fonts: dict[str, FontOptions]
 	dstTexPath: str
 	letterSpacing: int
+	minTexSize: int
 	operations: list[ImgOperation]
 
 	def __init__(self, argsJson: dict):
 		self.srcTexPaths = argsJson.get("srcTexPaths", [])
 		self.dstTexPath = argsJson.get("dstTexPath", None)
 		self.letterSpacing = argsJson.get("letterSpacing", 0)
+		self.minTexSize = argsJson.get("minTexSize", 256)
 		self.operations = [ImgOperation(d) for d in argsJson.get("operations", [])]
 
 		self.srcTextures = {}

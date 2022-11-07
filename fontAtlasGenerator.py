@@ -2,10 +2,29 @@ from __future__ import annotations
 from dataclasses import dataclass
 from PIL import Image, ImageDraw, ImageOps, ImageFilter, ImageEnhance
 from PIL.ImageFont import FreeTypeFont
+from fontTools.ttLib import TTFont
 
 from cliOptions import FontOptions
-
 from cliOptions import CliOptions, OperationType
+
+
+def fallbackInvalidFontChars(options: CliOptions):
+	for fontId, font in options.fonts.items():
+		fontCmap = TTFont(font.fontPath).getBestCmap()
+		supportedChars = set(fontCmap.keys())
+		for i in range(len(options.operations)):
+			op = options.operations[i]
+			if op.type != OperationType.FROM_FONT:
+				continue
+			if op.fallback is None:
+				continue
+			if op.charFontId != fontId:
+				continue
+			if len(op.drawChar) != 1:
+				raise Exception(f"char {op.id} must be a single char")
+			if ord(op.drawChar) not in supportedChars:
+				options.operations[i] = op.fallback
+
 def adjustFonts(options: CliOptions):
 	# for each font:
 	# 1. find largest bbox height extents
@@ -92,10 +111,15 @@ def estimateAtlasSize(options: CliOptions, charSizes: dict[str, FontCharSize]) -
 	avrCharHeight = allCharsHeight / allCharsCount + options.letterSpacing
 
 	estimatedAtlasArea = avrCharWidth * avrCharHeight * allCharsCount
-	estimatedAtlasArea *= 1.2
 
-	size = 256
-	while size**2 < estimatedAtlasArea:
+	def safetyFactor(texSize):
+		if texSize >= 2048:
+			return 1.05
+		if texSize >= 1024:
+			return 1.1
+		return 1.2
+	size = options.minTexSize
+	while size**2 < estimatedAtlasArea * safetyFactor(size):
 		size *= 2
 	
 	return size
@@ -166,6 +190,7 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlas
 
 def generateFontAtlas(options: CliOptions) -> dict:
 	options.operations.sort(key=lambda op: options.fonts[op.charFontId].fontHeight if op.type == OperationType.FROM_FONT else op.height)
+	fallbackInvalidFontChars(options)
 	adjustFonts(options)
 	charSizes = getCustomFontCharSizes(options)
 	atlasSize = estimateAtlasSize(options, charSizes)
