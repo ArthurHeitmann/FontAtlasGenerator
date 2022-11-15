@@ -12,7 +12,8 @@ from fontAtlasGenerator import generateFontAtlas
 # 		"0": {
 # 			"path": "C:\\Windows\\Fonts\\comic.ttf",
 # 			"height": 76,
-# 			"scale": 1
+# 			"scale": 1,
+# 			"letXPadding": 10,
 # 		},
 # 		"1": {
 # 			"path": "C:\\Windows\\Fonts\\comic.ttf",
@@ -32,74 +33,74 @@ from fontAtlasGenerator import generateFontAtlas
 # 			"type": 1,
 # 			"id": 0,
 # 			"drawChar": "e",
-# 			"charFontId": "1"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 1,
-# 			"drawChar": "S",
 # 			"charFontId": "0"
 # 		},
-# 		{
-# 			"type": 1,
-# 			"id": 2,
-# 			"drawChar": "e",
-# 			"charFontId": "0"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 3,
-# 			"drawChar": "c",
-# 			"charFontId": "0"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 4,
-# 			"drawChar": "t",
-# 			"charFontId": "0"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 5,
-# 			"drawChar": "A",
-# 			"charFontId": "0"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 6,
-# 			"drawChar": "C",
-# 			"charFontId": "0"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 7,
-# 			"drawChar": "B",
-# 			"charFontId": "1"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 8,
-# 			"drawChar": "B",
-# 			"charFontId": "1"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 9,
-# 			"drawChar": "C",
-# 			"charFontId": "2"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 10,
-# 			"drawChar": "B",
-# 			"charFontId": "2"
-# 		},
-# 		{
-# 			"type": 1,
-# 			"id": 11,
-# 			"drawChar": "B",
-# 			"charFontId": "2"
-# 		},
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 1,
+# 		# 	"drawChar": "S",
+# 		# 	"charFontId": "0"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 2,
+# 		# 	"drawChar": "e",
+# 		# 	"charFontId": "0"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 3,
+# 		# 	"drawChar": "c",
+# 		# 	"charFontId": "0"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 4,
+# 		# 	"drawChar": "t",
+# 		# 	"charFontId": "0"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 5,
+# 		# 	"drawChar": "A",
+# 		# 	"charFontId": "0"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 6,
+# 		# 	"drawChar": "C",
+# 		# 	"charFontId": "0"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 7,
+# 		# 	"drawChar": "B",
+# 		# 	"charFontId": "1"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 8,
+# 		# 	"drawChar": "B",
+# 		# 	"charFontId": "1"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 9,
+# 		# 	"drawChar": "C",
+# 		# 	"charFontId": "2"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 10,
+# 		# 	"drawChar": "B",
+# 		# 	"charFontId": "2"
+# 		# },
+# 		# {
+# 		# 	"type": 1,
+# 		# 	"id": 11,
+# 		# 	"drawChar": "B",
+# 		# 	"charFontId": "2"
+# 		# },
 # 	]
 # }
 
