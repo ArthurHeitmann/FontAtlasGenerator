@@ -34,6 +34,8 @@ class ImgOperation:
 		fallback = d.get("fallback", None)
 		if fallback is not None:
 			self.fallback = ImgOperation(fallback)
+		else:
+			self.fallback = None
 
 class FontOptions:
 	fontPath: str
