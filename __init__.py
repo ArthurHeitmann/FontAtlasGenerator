@@ -1,7 +1,5 @@
 import base64
 import json
-import os
-import sys
 
 from cliOptions import CliOptions
 from fontAtlasGenerator import generateFontAtlas

@@ -8,60 +8,84 @@ class OperationType:
 
 class ImgOperation:
 	type: int
-	id: int
-	# for font operations
-	drawChar: str|None
-	charFontId: int|None
-	fallback: ImgOperation|None
-	# for texture operations
-	srcTexId: int|None
-	srcX: int|None
-	srcY: int|None
-	width: int|None
-	height: int|None
+	id: str
 
 	def __init__(self, d: dict):
-		self.type = d.get("type")
-		self.id = d.get("id")
-		self.drawChar = d.get("drawChar", None)
-		self.charFontId = d.get("charFontId", None)
-		self.srcTexId = d.get("srcTexId", None)
-		self.srcX = d.get("srcX", None)
-		self.srcY = d.get("srcY", None)
-		self.width = d.get("width", None)
-		self.height = d.get("height", None)
+		self.type = d["type"]
+		self.id = d["id"]
+	
+	@staticmethod
+	def fromDict(d: dict):
+		if d["type"] == OperationType.FROM_FONT:
+			return ImgOperationFromFont(d)
+		elif d["type"] == OperationType.FROM_TEXTURE:
+			return ImgOperationFromTexture(d)
+		else:
+			raise Exception(f"Unknown operation type {d['type']}")
+
+class ImgOperationFromFont(ImgOperation):
+	drawChar: str
+	charFontId: str
+	fallback: ImgOperation|None
+
+	def __init__(self, d: dict):
+		super().__init__(d)
+		self.drawChar = d["drawChar"]
+		self.charFontId = d["charFontId"]
 
 		fallback = d.get("fallback", None)
 		if fallback is not None:
-			self.fallback = ImgOperation(fallback)
+			self.fallback = ImgOperation.fromDict(fallback)
 		else:
 			self.fallback = None
+
+class ImgOperationFromTexture(ImgOperation):
+	srcTexId: int
+	srcX: int
+	srcY: int
+	width: int
+	height: int
+	resolutionScale: float
+	pasteWidth: int
+	pasteHeight: int
+
+	def __init__(self, d: dict):
+		super().__init__(d)
+		self.srcTexId = d["srcTexId"]
+		self.srcX = d["srcX"]
+		self.srcY = d["srcY"]
+		self.width = d["width"]
+		self.height = d["height"]
+		self.resolutionScale = d.get("resolutionScale", 1.0)
+		self.pasteWidth = int(self.width * self.resolutionScale)
+		self.pasteHeight = int(self.height * self.resolutionScale)
 
 class FontOptions:
 	fontPath: str
 	font: FreeTypeFont
 	fontHeight: int
-	fontScale: int
 	letXPadding: int
 	letYPadding: int
 	letXOffset: int
 	letYOffset: int
-	bottomBaseline: int|None
+	resolutionScale: float
+	strokeWidth: int
 
 	def __init__(self, d: dict):
-		self.fontPath = d.get("path")
-		self.fontHeight = d.get("height")
-		self.fontScale = d.get("scale", 1)
+		self.fontPath = d["path"]
+		self.fontHeight = d["height"]
 		self.letXPadding = d.get("letXPadding", 0)
 		self.letYPadding = d.get("letYPadding", 0)
 		self.letXOffset = d.get("letXOffset", 0) + self.letXPadding
 		self.letYOffset = d.get("letYOffset", 0) + self.letYPadding
-		self.font = ImageFont.truetype(self.fontPath, size=int(self.fontHeight * self.fontScale))
-		self.bottomBaseline = None
+		self.resolutionScale = d.get("resolutionScale", 1.0)
+		self.strokeWidth = d.get("strokeWidth", 0)
+		self.fontHeight = int(self.fontHeight * self.resolutionScale)
+		self.font = ImageFont.truetype(self.fontPath, size=self.fontHeight)
 
 class CliOptions:
-	srcTexPaths: list[tuple[int, str]]
-	srcTextures: dict[int, Image.Image|None]
+	srcTexPaths: list[str]
+	srcTextures: dict[int, Image.Image]
 	fonts: dict[str, FontOptions]
 	dstTexPath: str
 	letterSpacing: int
@@ -73,7 +97,7 @@ class CliOptions:
 		self.dstTexPath = argsJson.get("dstTexPath", None)
 		self.letterSpacing = argsJson.get("letterSpacing", 0)
 		self.minTexSize = argsJson.get("minTexSize", 256)
-		self.operations = [ImgOperation(d) for d in argsJson.get("operations", [])]
+		self.operations = [ImgOperation.fromDict(d) for d in argsJson.get("operations", [])]
 
 		self.srcTextures = {}
 		for srcTexId, srcTexPath in enumerate(self.srcTexPaths):
