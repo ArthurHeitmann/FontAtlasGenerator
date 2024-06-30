@@ -23,6 +23,15 @@ def fallbackInvalidFontChars(options: CliOptions):
 				raise Exception(f"char {op.id} must be a single char")
 			if ord(op.drawChar) not in supportedChars:
 				options.operations[i] = op.fallback
+	for i in range(len(options.operations)):
+		op = options.operations[i]
+		if not isinstance(op, ImgOperationFromFont):
+			continue
+		if op.fallback is None:
+			continue
+		if op.charFontId in options.fonts:
+			continue
+		options.operations[i] = op.fallback
 
 def adjustFonts(options: CliOptions):
 	# for each font:
