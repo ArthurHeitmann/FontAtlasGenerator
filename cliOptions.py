@@ -70,6 +70,7 @@ class FontOptions:
 	letYOffset: int
 	resolutionScale: float
 	strokeWidth: int
+	rgbBlurSize: float
 
 	def __init__(self, d: dict):
 		self.fontPath = d["path"]
@@ -80,6 +81,7 @@ class FontOptions:
 		self.letYOffset = d.get("letYOffset", 0) + self.letYPadding
 		self.resolutionScale = d.get("resolutionScale", 1.0)
 		self.strokeWidth = d.get("strokeWidth", 0)
+		self.rgbBlurSize = d.get("rgbBlurSize", 0.0)
 		self.fontHeight = int(self.fontHeight * self.resolutionScale)
 		self.font = ImageFont.truetype(self.fontPath, size=self.fontHeight)
 

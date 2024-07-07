@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from PIL import Image, ImageDraw
+from math import ceil
+from PIL import Image, ImageDraw, ImageFilter
 from PIL.ImageFont import FreeTypeFont
 from fontTools.ttLib import TTFont
 
@@ -139,6 +140,16 @@ def resize(img: Image.Image, size: tuple[int, int]) -> Image.Image:
 	return Image.merge(img.mode, channels)
 	
 
+def blurRegionRGB(img: Image.Image, region: tuple[int, int, int, int], blurSize: float) -> Image.Image:
+	channels = img.split()
+	rgb = Image.merge("RGB", channels[:3])
+	alpha = channels[3]
+	crop = rgb.crop(region)
+	blur = crop.filter(ImageFilter.GaussianBlur(blurSize))
+	rgb.paste(blur, region)
+	return Image.merge("RGBA", [*rgb.split(), alpha])
+	
+
 def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlasSize: int) -> tuple[Image.Image, dict]:
 	atlasMap = {
 		"size": atlasSize,
@@ -179,6 +190,10 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlas
 			xOff = charSizes[op.id].xOff
 			yOff = charSizes[op.id].yOff
 			draw.text((curX + xOff, curY + yOff), op.drawChar, font=font.font, stroke_width=font.strokeWidth)
+			if font.rgbBlurSize > 0:
+				pad = ceil(options.letterSpacing / 2)
+				atlas = blurRegionRGB(atlas, (curX - pad, curY - pad, curX + pad + charWidth, curY + pad + charHeight), font.rgbBlurSize)
+				draw = ImageDraw.Draw(atlas)
 		elif isinstance(op, ImgOperationFromTexture):
 			srcTex = options.srcTextures[op.srcTexId]
 			crop = srcTex.crop((op.srcX, op.srcY, op.srcX + op.width, op.srcY + op.height))
@@ -194,16 +209,6 @@ def generateAtlas(options: CliOptions, charSizes: dict[str, FontCharSize], atlas
 		}
 		curX += charWidth + options.letterSpacing
 	
-	# fix half transparent pixels
-	# mask = atlas.getchannel("A")
-	# out = Image.new("RGBA", atlas.size, color=(0, 0, 0, 255))
-	# out.paste(mask)
-	# out = out.filter(ImageFilter.BoxBlur(radius=0.25))
-	# out = ImageEnhance.Brightness(out).enhance(1.5)
-	# out.putalpha(mask)
-	
-	
-	# return out, atlasMap
 	return atlas, atlasMap
 
 def generateFontAtlas(options: CliOptions) -> dict:
